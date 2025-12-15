@@ -166,6 +166,10 @@ const organizationSchema = org ? {
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="dns-prefetch" href="https://cdn.soosanmotor.com" />
+    <link rel="dns-prefetch" href="https://images.unsplash.com" />
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" />
     
     <!-- AI Crawlers Meta (GEO) -->
     <meta name="ai-content-declaration" content="human-created" />
@@ -175,9 +179,6 @@ const organizationSchema = org ? {
     {organizationSchema && (
       <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
     )}
-    
-    <!-- Scripts -->
-    <script is:inline src="/search-enhanced.js"></script>
   </head>
   <body style={`
     --btn-primary-bg: ${colors.buttons?.primaryBg || '#D84315'};
@@ -198,11 +199,14 @@ const organizationSchema = org ? {
   `}>
     <slot />
 
-    <!-- Floating widgets: QuickContact + OrderNotification -->
-    <FloatingWidgets client:load products={productsForNotifications} />
+    <!-- Floating widgets: QuickContact + OrderNotification (deferred) -->
+    <FloatingWidgets client:idle products={productsForNotifications} />
 
     <!-- Global search enhancement -->
     <GlobalSearch />
+    
+    <!-- Deferred Scripts -->
+    <script defer src="/search-enhanced.js"></script>
   </body>
 </html>
 

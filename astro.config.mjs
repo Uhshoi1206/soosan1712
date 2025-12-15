@@ -7,7 +7,7 @@ import sitemap from '@astrojs/sitemap';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://soosanmotor.com',
-  
+
   integrations: [
     react(),
     sitemap({
@@ -23,10 +23,10 @@ export default defineConfig({
       }
     }),
   ],
-  
+
   output: 'static',
   adapter: netlify(),
-  
+
   // Image optimization for Cloudflare CDN
   image: {
     remotePatterns: [
@@ -45,29 +45,36 @@ export default defineConfig({
     ],
     domains: ['cdn.soosanmotor.com', 'images.unsplash.com'],
   },
-  
+
   // Build optimization
   build: {
     inlineStylesheets: 'auto',
     assets: 'assets'
   },
-  
+
   // Prefetch for faster navigation
   prefetch: {
     prefetchAll: false,
     defaultStrategy: 'hover'
   },
-  
+
   // Vite optimization
   vite: {
     build: {
+      cssCodeSplit: true,
       rollupOptions: {
         output: {
           manualChunks: {
             'react-vendor': ['react', 'react-dom'],
+            'icons': ['lucide-react'],
           }
         }
       }
     },
+    // Optimize dependencies
+    optimizeDeps: {
+      include: ['react', 'react-dom'],
+      exclude: []
+    }
   }
 });
