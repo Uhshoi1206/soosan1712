@@ -565,7 +565,7 @@ collections:
   - name: "blog-danh-gia"
     label: "⭐ Đánh Giá Xe"
     label_singular: "Bài Viết"
-    folder: "src/content/blog/product-review"
+    folder: "src/content/blog/danh-gia-xe"
     create: true
     slug: "{{slug}}"
     extension: "md"
@@ -604,7 +604,7 @@ collections:
   - name: "blog-kinh-nghiem"
     label: "🚗 Kinh Nghiệm Lái Xe"
     label_singular: "Bài Viết"
-    folder: "src/content/blog/driver-tips"
+    folder: "src/content/blog/kinh-nghiem-lai-xe"
     create: true
     slug: "{{slug}}"
     extension: "md"
@@ -643,7 +643,7 @@ collections:
   - name: "blog-bao-duong"
     label: "🔧 Bảo Dưỡng"
     label_singular: "Bài Viết"
-    folder: "src/content/blog/maintenance"
+    folder: "src/content/blog/bao-duong"
     create: true
     slug: "{{slug}}"
     extension: "md"
@@ -682,7 +682,7 @@ collections:
   - name: "blog-tu-van"
     label: "💡 Tư Vấn Mua Xe"
     label_singular: "Bài Viết"
-    folder: "src/content/blog/buying-guide"
+    folder: "src/content/blog/tu-van-mua-xe"
     create: true
     slug: "{{slug}}"
     extension: "md"
@@ -721,7 +721,7 @@ collections:
   - name: "blog-cong-nghe"
     label: "🔬 Công Nghệ & Đổi Mới"
     label_singular: "Bài Viết"
-    folder: "src/content/blog/technology"
+    folder: "src/content/blog/cong-nghe-va-doi-moi"
     create: true
     slug: "{{slug}}"
     extension: "md"

@@ -40,7 +40,7 @@ const useRelatedBlogForTruck = (truck: Truck, allBlogPosts: BlogPost[]): BlogPos
     // Kiểm tra từng từ trong tên xe
     truckNameWords.forEach(word => {
       if (word.length < 3) return;
-      
+
       if (postTitle.includes(word)) {
         score += 5;
       }
@@ -80,12 +80,12 @@ const useRelatedBlogForTruck = (truck: Truck, allBlogPosts: BlogPost[]): BlogPos
     });
 
     // Bonus điểm cho bài viết đánh giá sản phẩm
-    if (post.category === 'product-review') {
+    if (post.category === 'danh-gia-xe') {
       score += 5;
     }
 
     // Bonus điểm cho bài viết tư vấn mua xe
-    if (post.category === 'buying-guide') {
+    if (post.category === 'tu-van-mua-xe') {
       score += 3;
     }
 
@@ -113,7 +113,7 @@ const useRelatedBlogForTruck = (truck: Truck, allBlogPosts: BlogPost[]): BlogPos
     }
 
     // Nếu vẫn không có, chọn bài viết đánh giá sản phẩm ngẫu nhiên
-    const productReviews = allBlogPosts.filter(post => post.category === 'product-review');
+    const productReviews = allBlogPosts.filter(post => post.category === 'danh-gia-xe');
     if (productReviews.length > 0) {
       return productReviews.slice(0, 3);
     }

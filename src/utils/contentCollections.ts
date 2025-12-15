@@ -166,12 +166,12 @@ export async function getLegacyBlogData() {
 
   return {
     allBlogPosts: allPosts,
-    industryNewsPosts: allPosts.filter(p => p.category === 'industry-news'),
-    productReviewPosts: allPosts.filter(p => p.category === 'product-review'),
-    driverTipsPosts: allPosts.filter(p => p.category === 'driver-tips'),
-    maintenancePosts: allPosts.filter(p => p.category === 'maintenance'),
-    buyingGuidePosts: allPosts.filter(p => p.category === 'buying-guide'),
-    technologyPosts: allPosts.filter(p => p.category === 'technology'),
+    industryNewsPosts: allPosts.filter(p => p.category === 'tin-tuc-nganh-van-tai'),
+    productReviewPosts: allPosts.filter(p => p.category === 'danh-gia-xe'),
+    driverTipsPosts: allPosts.filter(p => p.category === 'kinh-nghiem-lai-xe'),
+    maintenancePosts: allPosts.filter(p => p.category === 'bao-duong'),
+    buyingGuidePosts: allPosts.filter(p => p.category === 'tu-van-mua-xe'),
+    technologyPosts: allPosts.filter(p => p.category === 'cong-nghe-va-doi-moi'),
   };
 }
 
