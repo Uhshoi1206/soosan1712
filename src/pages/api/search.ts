@@ -1,7 +1,16 @@
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
+import { getBlogCategories } from '../../utils/blogCategories';
 
 export const prerender = false;
+
+// Helper function to extract slug from post.id (handles nested folders)
+function extractSlugFromPostId(postId: string): string {
+  const idWithoutExtension = postId.replace(/\.md$/, '');
+  return idWithoutExtension.includes('/')
+    ? idWithoutExtension.split('/').pop()!
+    : idWithoutExtension;
+}
 
 export const GET: APIRoute = async ({ url }) => {
   const query = url.searchParams.get('q')?.toLowerCase().trim() || '';
@@ -18,6 +27,7 @@ export const GET: APIRoute = async ({ url }) => {
       getCollection('products'),
       getCollection('blog')
     ]);
+    const { getCategorySlug } = await getBlogCategories();
 
     const productResults = products
       .filter(product => !product.data.isHidden)
@@ -53,13 +63,17 @@ export const GET: APIRoute = async ({ url }) => {
           excerpt.includes(query);
       })
       .slice(0, 5)
-      .map(post => ({
-        id: post.id,
-        title: post.data.title,
-        type: 'blog' as const,
-        url: `/${post.data.category}/${post.data.slug || post.slug}`,
-        excerpt: post.data.excerpt?.substring(0, 100) || post.data.description?.substring(0, 100)
-      }));
+      .map(post => {
+        const slug = post.data.slug || extractSlugFromPostId(post.id);
+        const categorySlug = getCategorySlug(post.data.category);
+        return {
+          id: post.id,
+          title: post.data.title,
+          type: 'blog' as const,
+          url: `/danh-muc-bai-viet/${categorySlug}/${slug}`,
+          excerpt: post.data.excerpt?.substring(0, 100) || post.data.description?.substring(0, 100)
+        };
+      });
 
     const results = [...productResults, ...blogResults]
       .sort((a, b) => {
