@@ -172,6 +172,7 @@ export async function getLegacyBlogData() {
     maintenancePosts: allPosts.filter(p => p.category === 'bao-duong'),
     buyingGuidePosts: allPosts.filter(p => p.category === 'tu-van-mua-xe'),
     technologyPosts: allPosts.filter(p => p.category === 'cong-nghe-va-doi-moi'),
+    trafficLawPosts: allPosts.filter(p => p.category === 'luat-giao-thong'),
   };
 }
 

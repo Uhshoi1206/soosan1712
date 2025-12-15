@@ -17,7 +17,8 @@ const VALID_CATEGORIES = [
     'kinh-nghiem-lai-xe',
     'bao-duong',
     'tu-van-mua-xe',
-    'cong-nghe-va-doi-moi'
+    'cong-nghe-va-doi-moi',
+    'luat-giao-thong'
 ];
 
 /**

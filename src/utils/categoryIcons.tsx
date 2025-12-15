@@ -10,7 +10,8 @@ import {
   Star,
   GraduationCap,
   Settings,
-  ShoppingCart
+  ShoppingCart,
+  Scale
 } from 'lucide-react';
 
 export const categoryIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -27,6 +28,7 @@ export const categoryIconMap: Record<string, React.ComponentType<{ className?: s
   'technology': Zap,
   'cong-nghe': Zap,
   'cong-nghe-va-doi-moi': Zap,
+  'luat-giao-thong': Scale,
 };
 
 export const getCategoryIcon = (categoryId: string) => {
