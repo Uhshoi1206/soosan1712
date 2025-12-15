@@ -20,16 +20,26 @@ try {
 
   blogPosts = allBlogPosts
     .filter(post => post?.data && !post.data.isHidden)
-    .map(post => ({
-      slug: post.slug || post.id,
-      title: post.data.title || '',
-      description: post.data.description || '',
-      excerpt: post.data.excerpt || '',
-      category: post.data.category || '',
-      categorySlug: getCategorySlug(post.data.category),
-      publishDate: post.data.publishDate || new Date(),
-      image: post.data.image || ''
-    }));
+    .map(post => {
+      // Extract slug, handling nested folder paths in post.id
+      let slug = post.data.slug;
+      if (!slug) {
+        const idWithoutExtension = post.id.replace(/\.md$/, '');
+        slug = idWithoutExtension.includes('/') 
+          ? idWithoutExtension.split('/').pop()
+          : idWithoutExtension;
+      }
+      return {
+        slug,
+        title: post.data.title || '',
+        description: post.data.description || '',
+        excerpt: post.data.excerpt || '',
+        category: post.data.category || '',
+        categorySlug: getCategorySlug(post.data.category),
+        publishDate: post.data.publishDate || new Date(),
+        image: post.data.image || ''
+      };
+    });
 } catch (error) {
   console.error('[search.astro] Error loading data:', error);
   errorMessage = error instanceof Error ? error.message : 'Unknown error';
