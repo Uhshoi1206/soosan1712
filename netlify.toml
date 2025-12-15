@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "node scripts/organize-products.cjs && npm run build"
   publish = "dist"
 
 [functions]
