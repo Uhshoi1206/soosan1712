@@ -22,7 +22,16 @@ export async function getStaticPaths() {
   return allPosts
     .filter(post => !post.data.isHidden)
     .map((post) => {
-      const slug = post.data.slug || post.id.replace(/\.md$/, '');
+      // Extract slug: prefer frontmatter slug, then extract filename from post.id (which may include folder path)
+      let slug = post.data.slug;
+      if (!slug) {
+        // post.id can be like "buying-guide/post-name" or just "post-name"
+        // We need just the final part (filename without extension)
+        const idWithoutExtension = post.id.replace(/\.md$/, '');
+        slug = idWithoutExtension.includes('/') 
+          ? idWithoutExtension.split('/').pop()! 
+          : idWithoutExtension;
+      }
       return {
         params: {
           categorySlug: getCategorySlug(post.data.category),
@@ -41,7 +50,14 @@ const categoryLabel = categoryMap[postData.category] || postData.category;
 const categorySlug = getCategorySlug(postData.category);
 
 const allPosts = await getVisibleBlogPosts();
-const currentSlug = postData.slug || post.id.replace(/\.md$/, '');
+// Extract slug, handling nested folder paths in post.id
+let currentSlug = postData.slug;
+if (!currentSlug) {
+  const idWithoutExtension = post.id.replace(/\.md$/, '');
+  currentSlug = idWithoutExtension.includes('/') 
+    ? idWithoutExtension.split('/').pop()! 
+    : idWithoutExtension;
+}
 
 const relatedPosts = allPosts
   .filter(p => {
@@ -310,4 +326,3 @@ const settings = settingsEntry?.data;
     <TableOfContents client:only="react" content={post.body} />
   </Layout>
 </BlogLayout>
-
