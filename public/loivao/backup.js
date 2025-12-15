@@ -5,7 +5,7 @@
 
 // Configuration
 const CONFIG = {
-    repo: 'Uhshoi1206/soosan12122025',
+    repo: 'Uhshoi1206/soosan1712',
     branch: 'main',
     contentPath: 'src/content',
     paths: {
@@ -407,6 +407,304 @@ async function backupFull() {
     await performBackup('full', 'source-code');
 }
 
+// =====================================================
+// RESTORE FUNCTIONALITY
+// =====================================================
+
+// State for restore
+let restoreFiles = [];
+let isRestoreRunning = false;
+
+// Handle file selection
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        processZipFile(file);
+    }
+}
+
+// Setup drag and drop
+function setupDragDrop() {
+    const dropZone = document.getElementById('drop-zone');
+    if (!dropZone) return;
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && file.name.endsWith('.zip')) {
+            processZipFile(file);
+        } else {
+            log('Vui lòng chọn file ZIP', 'error');
+        }
+    });
+}
+
+// Process uploaded ZIP file
+async function processZipFile(file) {
+    try {
+        clearLog();
+        log(`Đang đọc file: ${file.name}...`, 'info');
+
+        const zip = await JSZip.loadAsync(file);
+        restoreFiles = [];
+
+        // Extract file list
+        zip.forEach((relativePath, zipEntry) => {
+            if (!zipEntry.dir) {
+                restoreFiles.push({
+                    path: relativePath,
+                    zipEntry: zipEntry
+                });
+            }
+        });
+
+        if (restoreFiles.length === 0) {
+            log('File ZIP trống hoặc không có nội dung hợp lệ', 'error');
+            return;
+        }
+
+        // Update UI
+        document.getElementById('selected-file-info').textContent = `✓ ${file.name} (${formatFileSize(file.size)})`;
+
+        // Show preview
+        showRestorePreview();
+
+        log(`✓ Đã đọc ${restoreFiles.length} files từ backup`, 'success');
+
+    } catch (error) {
+        log(`Lỗi đọc file ZIP: ${error.message}`, 'error');
+    }
+}
+
+// Format file size
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+// Show restore preview
+function showRestorePreview() {
+    const previewSection = document.getElementById('restore-preview');
+    const statsContainer = document.getElementById('preview-stats');
+    const filesContainer = document.getElementById('preview-files');
+
+    // Categorize files
+    const categories = {
+        settings: [],
+        products: [],
+        blog: [],
+        banners: [],
+        other: []
+    };
+
+    restoreFiles.forEach(file => {
+        if (file.path.includes('content/settings')) {
+            categories.settings.push(file);
+        } else if (file.path.includes('content/products') || file.path.includes('content/categories')) {
+            categories.products.push(file);
+        } else if (file.path.includes('content/blog')) {
+            categories.blog.push(file);
+        } else if (file.path.includes('content/banners')) {
+            categories.banners.push(file);
+        } else {
+            categories.other.push(file);
+        }
+    });
+
+    // Show stats
+    statsContainer.innerHTML = `
+        <div class="stat">Tổng: <strong>${restoreFiles.length}</strong> files</div>
+        ${categories.settings.length ? `<div class="stat">⚙️ Settings: <strong>${categories.settings.length}</strong></div>` : ''}
+        ${categories.products.length ? `<div class="stat">📦 Sản phẩm: <strong>${categories.products.length}</strong></div>` : ''}
+        ${categories.blog.length ? `<div class="stat">📝 Bài viết: <strong>${categories.blog.length}</strong></div>` : ''}
+        ${categories.banners.length ? `<div class="stat">🎨 Banners: <strong>${categories.banners.length}</strong></div>` : ''}
+        ${categories.other.length ? `<div class="stat">📁 Khác: <strong>${categories.other.length}</strong></div>` : ''}
+    `;
+
+    // Show file list (limit to 50 for performance)
+    const displayFiles = restoreFiles.slice(0, 50);
+    filesContainer.innerHTML = displayFiles.map(f =>
+        `<div class="file-item">${f.path}</div>`
+    ).join('');
+
+    if (restoreFiles.length > 50) {
+        filesContainer.innerHTML += `<div class="file-item" style="color: var(--warning)">... và ${restoreFiles.length - 50} files khác</div>`;
+    }
+
+    previewSection.style.display = 'block';
+}
+
+// Cancel restore
+function cancelRestore() {
+    restoreFiles = [];
+    document.getElementById('restore-preview').style.display = 'none';
+    document.getElementById('selected-file-info').textContent = '';
+    document.getElementById('restore-file').value = '';
+    log('Đã hủy restore', 'info');
+}
+
+// Get file SHA (needed for updating existing files)
+async function getFileSha(path, token) {
+    try {
+        const url = `https://api.github.com/repos/${CONFIG.repo}/contents/${path}?ref=${CONFIG.branch}`;
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return data.sha;
+        }
+        return null;
+    } catch {
+        return null;
+    }
+}
+
+// Upload single file to GitHub
+async function uploadFileToGitHub(path, content, token, sha = null) {
+    const url = `https://api.github.com/repos/${CONFIG.repo}/contents/${path}`;
+
+    // Encode content to base64
+    const base64Content = btoa(unescape(encodeURIComponent(content)));
+
+    const body = {
+        message: `[Restore] Update ${path}`,
+        content: base64Content,
+        branch: CONFIG.branch
+    };
+
+    if (sha) {
+        body.sha = sha;
+    }
+
+    const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || `HTTP ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+// Perform restore
+async function performRestore() {
+    if (isRestoreRunning) {
+        log('Đang có restore đang chạy, vui lòng đợi...', 'warning');
+        return;
+    }
+
+    if (restoreFiles.length === 0) {
+        log('Không có file nào để restore', 'error');
+        return;
+    }
+
+    // Confirm
+    if (!confirm(`Bạn có chắc muốn khôi phục ${restoreFiles.length} files?\n\nCác file hiện có sẽ bị GHI ĐÈ!`)) {
+        return;
+    }
+
+    const button = document.getElementById('btn-restore');
+    button.dataset.originalText = button.querySelector('.btn-text').textContent;
+
+    try {
+        isRestoreRunning = true;
+        setButtonLoading(button, true);
+
+        log('Bắt đầu restore...', 'info');
+
+        // Get token
+        let token = getGitHubToken();
+        if (!token) {
+            token = promptForToken();
+            if (!token) {
+                throw new Error('Không có GitHub token');
+            }
+        }
+        log('✓ Đã xác thực token', 'success');
+
+        showProgress(true);
+        const total = restoreFiles.length;
+        let success = 0;
+        let failed = 0;
+
+        for (let i = 0; i < restoreFiles.length; i++) {
+            const file = restoreFiles[i];
+
+            try {
+                // Read file content from ZIP
+                const content = await file.zipEntry.async('string');
+
+                // Get existing file SHA (if exists)
+                const sha = await getFileSha(file.path, token);
+
+                // Upload to GitHub
+                await uploadFileToGitHub(file.path, content, token, sha);
+
+                success++;
+
+                if ((i + 1) % 5 === 0 || i === total - 1) {
+                    log(`Đã restore ${i + 1}/${total} files...`, 'info');
+                }
+
+            } catch (error) {
+                failed++;
+                log(`✗ Lỗi restore ${file.path}: ${error.message}`, 'warning');
+            }
+
+            setProgress(((i + 1) / total) * 100);
+
+            // Rate limiting: small delay between requests
+            if (i < restoreFiles.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+        }
+
+        showProgress(false);
+        setProgress(0);
+
+        if (failed === 0) {
+            log(`✓ Restore hoàn tất! ${success} files đã được khôi phục.`, 'success');
+        } else {
+            log(`⚠ Restore hoàn tất với ${failed} lỗi. ${success}/${total} files thành công.`, 'warning');
+        }
+
+        // Reset UI
+        cancelRestore();
+
+    } catch (error) {
+        log(`✗ Lỗi: ${error.message}`, 'error');
+        showProgress(false);
+        setProgress(0);
+    } finally {
+        isRestoreRunning = false;
+        setButtonLoading(button, false);
+    }
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     const accessDenied = document.getElementById('access-denied');
@@ -420,7 +718,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (mainContent) mainContent.classList.add('show');
         if (accessDenied) accessDenied.classList.remove('show');
 
-        log('Sẵn sàng thực hiện backup. Chọn loại backup bên trên.', 'info');
+        // Setup restore drag-drop
+        setupDragDrop();
+
+        log('Sẵn sàng thực hiện backup/restore. Chọn chức năng bên trên.', 'info');
         log('✓ Đã tìm thấy GitHub token', 'success');
     } else {
         // No token - show access denied
