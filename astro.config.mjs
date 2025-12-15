@@ -61,20 +61,13 @@ export default defineConfig({
   // Vite optimization
   vite: {
     build: {
-      cssCodeSplit: true,
       rollupOptions: {
         output: {
           manualChunks: {
             'react-vendor': ['react', 'react-dom'],
-            'icons': ['lucide-react'],
           }
         }
       }
     },
-    // Optimize dependencies
-    optimizeDeps: {
-      include: ['react', 'react-dom'],
-      exclude: []
-    }
   }
 });
