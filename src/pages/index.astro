@@ -1,20 +1,6 @@
 ---
-/**
- * Homepage - Optimized with Astro Islands
- * 
- * Performance Strategy:
- * - HomepageHeader: client:load (needs immediate interactivity)
- * - HomepageHero: client:load (above the fold, needs fast LCP)
- * - HomepageVehicles: client:visible (below fold, lazy load)
- * - HomepageBottom: client:visible (below fold, lazy load)
- * - HomepageFooter: client:idle (deferred)
- */
 import BaseLayout from '../layouts/BaseLayout.astro';
-import HomepageHeader from '../components/home/HomepageHeader';
-import HomepageHero from '../components/home/HomepageHero';
-import HomepageVehicles from '../components/home/HomepageVehicles';
-import HomepageBottom from '../components/home/HomepageBottom';
-import HomepageFooter from '../components/home/HomepageFooter';
+import HomePageWithProvider from '../components/home/HomePageWithProvider.tsx';
 
 import { getOrganizedProducts, getLegacyBlogData, getVisibleCategories, getActiveBanners } from '../utils/contentCollections';
 import { getBlogCategories } from '../utils/blogCategories';
@@ -44,49 +30,19 @@ const siteSettings = siteSettingsEntry?.data;
   title="Trang Chủ | soosanmotor.com - Nhà sản xuất sơ mi rơ moóc, cẩu, thùng xe tải đông lạnh, Xe xitéc (bồn) chở xăng dầu, xe chuyên dụng hàng đầu tại Việt Nam"
   description="Chuyên sản xuất sơ mi rơ moóc, cẩu, thùng xe tải đông lạnh, Xe xitéc (bồn) chở xăng dầu và các loại xe chuyên dụng khác với đa dạng thương hiệu: Soosan, Doosung, Hyundai, Hino, Isuzu, Dongfeng, Chenglong... Giá tốt nhất thị trường!"
 >
-  <div class="flex flex-col min-h-screen">
-    <!-- Header: Load immediately for navigation -->
-    <HomepageHeader 
-      client:load 
-      siteSettings={siteSettings} 
-    />
-
-    <main class="flex-grow">
-      <!-- Hero: Load immediately (above fold, LCP critical) -->
-      <HomepageHero 
-        client:load 
-        banners={banners}
-        siteSettings={siteSettings}
-      />
-
-      <!-- Vehicle Carousels: Lazy load when visible -->
-      <HomepageVehicles
-        client:visible
-        featuredTrucks={featuredTrucks}
-        specializedCranes={specializedCranes}
-        semiTrailers={semiTrailers}
-        tractors={tractors}
-        trucks={trucks}
-        extraCategories={extraCategories}
-        enabledTypes={enabledTypes}
-        siteSettings={siteSettings}
-      />
-
-      <!-- Bottom Sections: Lazy load when visible -->
-      <HomepageBottom
-        client:visible
-        trucks={trucks}
-        sortedPosts={sortedPosts}
-        categoryMap={categoryMap}
-        categoryInfoMap={categoryInfoMap}
-        siteSettings={siteSettings}
-      />
-    </main>
-
-    <!-- Footer: Defer loading -->
-    <HomepageFooter 
-      client:idle 
-      siteSettings={siteSettings} 
-    />
-  </div>
+  <HomePageWithProvider
+    client:idle
+    featuredTrucks={featuredTrucks}
+    specializedCranes={specializedCranes}
+    semiTrailers={semiTrailers}
+    tractors={tractors}
+    trucks={trucks}
+    sortedPosts={sortedPosts}
+    categoryMap={categoryMap}
+    categoryInfoMap={categoryInfoMap}
+    extraCategories={extraCategories}
+    enabledTypes={enabledTypes}
+    banners={banners}
+    siteSettings={siteSettings}
+  />
 </BaseLayout>
