@@ -36,18 +36,12 @@ const BLOG_ICONS = {
     'bao-duong': '🔧',
     'tu-van-mua-xe': '💡',
     'cong-nghe-va-doi-moi': '🔬',
+    'luat-giao-thong': '⚖️',
     'default': '📝'
 };
 
-// Blog folder mapping (category slug -> folder name)
-const BLOG_FOLDER_MAP = {
-    'tin-tuc-nganh-van-tai': 'tin-tuc-nganh-van-tai',
-    'danh-gia-xe': 'product-review',
-    'kinh-nghiem-lai-xe': 'driver-tips',
-    'bao-duong': 'maintenance',
-    'tu-van-mua-xe': 'buying-guide',
-    'cong-nghe-va-doi-moi': 'technology'
-};
+// Note: Blog folders now use the category slug directly (no mapping needed)
+// The organize-blogs.cjs script and this generator both use the slug as folder name
 
 /**
  * Read all JSON files from a directory
@@ -168,7 +162,8 @@ ${typeOptions}
 function generateBlogCollection(category, categoryOptions) {
     const slug = category.slug || category.id;
     const icon = BLOG_ICONS[slug] || BLOG_ICONS.default;
-    const folderName = BLOG_FOLDER_MAP[slug] || slug;
+    // Use slug directly as folder name (no mapping needed)
+    const folderName = slug;
 
     // Ensure folder exists
     ensureCategoryFolder('src/content/blog', folderName);

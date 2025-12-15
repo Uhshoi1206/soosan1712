@@ -2,24 +2,49 @@
  * organize-blogs.cjs
  * 
  * Script tự động sắp xếp các bài viết blog vào thư mục đúng dựa trên trường category.
- * Script này chạy mỗi khi Netlify build, đảm bảo các bài viết luôn nằm trong thư mục đúng.
+ * Script này đọc danh sách categories từ src/content/blog-categories/*.json
+ * và di chuyển các bài viết vào thư mục tương ứng.
+ * 
+ * Script chạy mỗi khi Netlify build, đảm bảo các bài viết luôn nằm trong thư mục đúng.
+ * 
+ * Run: node scripts/organize-blogs.cjs
  */
 
 const fs = require('fs');
 const path = require('path');
 
 const BLOG_DIR = path.join(__dirname, '..', 'src', 'content', 'blog');
+const BLOG_CATEGORIES_DIR = path.join(__dirname, '..', 'src', 'content', 'blog-categories');
 
-// Danh sách các category hợp lệ (cũng là tên thư mục)
-const VALID_CATEGORIES = [
-    'tin-tuc-nganh-van-tai',
-    'danh-gia-xe',
-    'kinh-nghiem-lai-xe',
-    'bao-duong',
-    'tu-van-mua-xe',
-    'cong-nghe-va-doi-moi',
-    'luat-giao-thong'
-];
+/**
+ * Đọc tất cả category slugs từ blog-categories folder
+ * Tự động hóa - không cần hardcode
+ */
+function getValidCategories() {
+    if (!fs.existsSync(BLOG_CATEGORIES_DIR)) {
+        console.log('⚠️  Blog categories directory not found');
+        return [];
+    }
+
+    const files = fs.readdirSync(BLOG_CATEGORIES_DIR).filter(f => f.endsWith('.json'));
+    const categories = [];
+
+    for (const file of files) {
+        try {
+            const content = fs.readFileSync(path.join(BLOG_CATEGORIES_DIR, file), 'utf-8');
+            const category = JSON.parse(content);
+            const slug = category.slug || category.id;
+            if (slug) {
+                categories.push(slug);
+            }
+        } catch (error) {
+            console.log(`⚠️  Error reading ${file}: ${error.message}`);
+        }
+    }
+
+    console.log(`📂 Found ${categories.length} blog categories: ${categories.join(', ')}\n`);
+    return categories;
+}
 
 /**
  * Parse frontmatter từ file markdown
@@ -78,8 +103,16 @@ function getMarkdownFiles(dir) {
 function organizeBlogPosts() {
     console.log('\n🔄 Organizing blog posts by category...\n');
 
+    // Đọc categories từ JSON files (TỰ ĐỘNG)
+    const validCategories = getValidCategories();
+
+    if (validCategories.length === 0) {
+        console.log('⚠️  No valid categories found. Skipping organization.');
+        return;
+    }
+
     // Đảm bảo tất cả các thư mục category tồn tại
-    for (const category of VALID_CATEGORIES) {
+    for (const category of validCategories) {
         ensureDirectoryExists(path.join(BLOG_DIR, category));
     }
 
@@ -88,6 +121,7 @@ function organizeBlogPosts() {
     console.log(`📝 Found ${allFiles.length} blog post(s)\n`);
 
     let movedCount = 0;
+    let skippedCount = 0;
 
     for (const filePath of allFiles) {
         const content = fs.readFileSync(filePath, 'utf-8');
@@ -95,6 +129,7 @@ function organizeBlogPosts() {
 
         if (!frontmatter || !frontmatter.category) {
             console.log(`⚠️  No category found in: ${path.basename(filePath)}`);
+            skippedCount++;
             continue;
         }
 
@@ -103,8 +138,10 @@ function organizeBlogPosts() {
         const fileName = path.basename(filePath);
 
         // Kiểm tra category có hợp lệ không
-        if (!VALID_CATEGORIES.includes(category)) {
-            console.log(`⚠️  Invalid category "${category}" in: ${fileName}`);
+        if (!validCategories.includes(category)) {
+            console.log(`⚠️  Unknown category "${category}" in: ${fileName}`);
+            console.log(`   Valid categories: ${validCategories.join(', ')}`);
+            skippedCount++;
             continue;
         }
 
@@ -118,18 +155,24 @@ function organizeBlogPosts() {
 
         try {
             fs.renameSync(filePath, newPath);
-            console.log(`✅ Moved: ${fileName} → ${category}/`);
+            console.log(`✅ Moved: ${fileName}`);
+            console.log(`   ${currentDir}/ → ${category}/`);
             movedCount++;
         } catch (error) {
             console.error(`❌ Error moving ${fileName}: ${error.message}`);
         }
     }
 
+    console.log('\n📊 Summary:');
     if (movedCount === 0) {
-        console.log('✨ All blog posts are already in the correct folders!\n');
+        console.log('✨ All blog posts are already in the correct folders!');
     } else {
-        console.log(`\n📦 Moved ${movedCount} file(s) to their correct category folders.\n`);
+        console.log(`📦 Moved ${movedCount} file(s) to their correct category folders.`);
     }
+    if (skippedCount > 0) {
+        console.log(`⚠️  Skipped ${skippedCount} file(s) with issues.`);
+    }
+    console.log('');
 }
 
 // Run
