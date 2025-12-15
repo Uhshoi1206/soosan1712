@@ -4,6 +4,18 @@ import type { BlogPost } from '@/models/BlogPost';
 import type { Banner } from '@/components/BannerCarousel';
 
 /**
+ * Helper function to extract slug from post.id
+ * post.id can be like "folder/post-name" or just "post-name"
+ * This returns just the filename part without extension
+ */
+function extractSlugFromPostId(postId: string): string {
+  const idWithoutExtension = postId.replace(/\.md$/, '');
+  return idWithoutExtension.includes('/')
+    ? idWithoutExtension.split('/').pop()!
+    : idWithoutExtension;
+}
+
+/**
  * Get all visible categories (not hidden)
  */
 export async function getVisibleCategories() {
@@ -93,7 +105,7 @@ export async function getVisibleBlogPosts(): Promise<BlogPost[]> {
     .filter(post => !post.data.isHidden)
     .map(post => ({
       ...post.data,
-      slug: post.data.slug || post.id.replace(/\.md$/, ''),
+      slug: post.data.slug || extractSlugFromPostId(post.id),
       content: post.body || '',
     } as unknown as BlogPost))
     .sort((a, b) => b.publishDate - a.publishDate);
@@ -107,7 +119,7 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
   return posts
     .map(post => ({
       ...post.data,
-      slug: post.data.slug || post.id.replace(/\.md$/, ''),
+      slug: post.data.slug || extractSlugFromPostId(post.id),
       content: post.body || '',
     } as unknown as BlogPost))
     .sort((a, b) => b.publishDate - a.publishDate);
@@ -126,12 +138,12 @@ export async function getBlogPostsByCategory(category: string): Promise<BlogPost
  */
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
   const posts = await getCollection('blog');
-  const post = posts.find(p => (p.data.slug || p.id.replace(/\.md$/, '')) === slug);
+  const post = posts.find(p => (p.data.slug || extractSlugFromPostId(p.id)) === slug);
   if (!post) return undefined;
 
   return {
     ...post.data,
-    slug: post.data.slug || post.id.replace(/\.md$/, ''),
+    slug: post.data.slug || extractSlugFromPostId(post.id),
     content: post.body || '',
   } as unknown as BlogPost;
 }
