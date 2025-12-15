@@ -1,12 +1,12 @@
 backend:
   name: github
-  repo: Uhshoi1206/soosan12122025
-  branch: main
-  site_domain: "soosan12122025.netlify.app"
-  base_url: "https://api.netlify.com"
+  repo: {{GITHUB_REPO}}
+  branch: {{GITHUB_BRANCH}}
+  site_domain: "{{SITE_DOMAIN}}"
+  base_url: "{{NETLIFY_BASE_URL}}"
 
-site_url: "https://soosan12122025.netlify.app"
-display_url: "https://soosan12122025.netlify.app"
+site_url: "{{SITE_URL}}"
+display_url: "{{SITE_URL}}"
 
 media_folder: "public/assets/uploads"
 public_folder: "/assets/uploads"

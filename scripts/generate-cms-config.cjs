@@ -16,6 +16,7 @@ const CATEGORIES_DIR = path.join(__dirname, '../src/content/categories');
 const BLOG_CATEGORIES_DIR = path.join(__dirname, '../src/content/blog-categories');
 const OUTPUT_FILE = path.join(__dirname, '../public/loivao/config.yml');
 const TEMPLATE_FILE = path.join(__dirname, 'cms-config-base.yml');
+const SITE_CONFIG_FILE = path.join(__dirname, '../site.config.json');
 
 // Icon mapping for product categories
 const PRODUCT_ICONS = {
@@ -214,6 +215,15 @@ ${categoryOptions}
 function main() {
     console.log('🔄 Generating CMS config.yml...\n');
 
+    // Read site config
+    if (!fs.existsSync(SITE_CONFIG_FILE)) {
+        console.error(`Site config not found: ${SITE_CONFIG_FILE}`);
+        console.error('Please create site.config.json in project root with github and netlify settings.');
+        process.exit(1);
+    }
+    const siteConfig = JSON.parse(fs.readFileSync(SITE_CONFIG_FILE, 'utf-8'));
+    console.log(`Loaded site config: ${siteConfig.github.repo} -> ${siteConfig.netlify.siteDomain}\n`);
+
     // Read categories
     const productCategories = readCategories(CATEGORIES_DIR);
     const blogCategories = readCategories(BLOG_CATEGORIES_DIR);
@@ -244,14 +254,21 @@ function main() {
         .map(cat => generateBlogCollection(cat, categoryOptions))
         .join('\n');
 
-    // Combine everything
+    // Combine everything - replace site config placeholders first, then collections
     const finalConfig = baseConfig
+        .replace(/\{\{GITHUB_REPO\}\}/g, siteConfig.github.repo)
+        .replace(/\{\{GITHUB_BRANCH\}\}/g, siteConfig.github.branch)
+        .replace(/\{\{SITE_DOMAIN\}\}/g, siteConfig.netlify.siteDomain)
+        .replace(/\{\{NETLIFY_BASE_URL\}\}/g, siteConfig.netlify.baseUrl)
+        .replace(/\{\{SITE_URL\}\}/g, siteConfig.siteUrl)
         .replace('{{PRODUCT_COLLECTIONS}}', productCollections)
         .replace('{{BLOG_COLLECTIONS}}', blogCollections);
 
     // Write output
     fs.writeFileSync(OUTPUT_FILE, finalConfig, 'utf-8');
     console.log(`✅ Generated: ${OUTPUT_FILE}`);
+    console.log(`   - Site: ${siteConfig.siteUrl}`);
+    console.log(`   - Repo: ${siteConfig.github.repo}`);
     console.log(`   - ${productCategories.length} product collections`);
     console.log(`   - ${blogCategories.length} blog collections`);
 }
