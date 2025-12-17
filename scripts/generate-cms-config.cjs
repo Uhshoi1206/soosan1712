@@ -60,13 +60,21 @@ function readCategories(dir) {
 }
 
 /**
- * Ensure folder exists for a category
+ * Ensure folder exists for a category and create .gitkeep if needed
  */
 function ensureCategoryFolder(baseDir, slug) {
     const folderPath = path.join(__dirname, '..', baseDir, slug);
+    const gitkeepPath = path.join(folderPath, '.gitkeep');
+
     if (!fs.existsSync(folderPath)) {
         fs.mkdirSync(folderPath, { recursive: true });
-        console.log(`Created folder: ${folderPath}`);
+        // Create .gitkeep so Git tracks empty folders
+        fs.writeFileSync(gitkeepPath, '');
+        console.log(`📁 Created folder with .gitkeep: ${baseDir}/${slug}`);
+    } else if (!fs.existsSync(gitkeepPath) && fs.readdirSync(folderPath).length === 0) {
+        // If folder exists but is empty, add .gitkeep
+        fs.writeFileSync(gitkeepPath, '');
+        console.log(`📄 Added .gitkeep to empty folder: ${baseDir}/${slug}`);
     }
 }
 
