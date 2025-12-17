@@ -183,9 +183,9 @@ function generateBlogCollection(category, categoryOptions) {
     summary: "{{title}}"
     sortable_fields: ['title', 'publishDate']
     fields:
-      - { label: "ID", name: "id", widget: "string", required: true }
+      - { label: "ID", name: "id", widget: "string", required: true, pattern: ["^[a-z0-9-]+$", "Chỉ dùng chữ thường không dấu (a-z), số (0-9) và dấu gạch ngang (-)"] }
       - { label: "Tiêu Đề", name: "title", widget: "string", required: true }
-      - { label: "Slug", name: "slug", widget: "string", required: true }
+      - { label: "Slug (không dấu)", name: "slug", widget: "string", required: true, hint: "VD: bai-viet-moi (KHÔNG dùng dấu tiếng Việt)", pattern: ["^[a-z0-9-]+$", "Chỉ dùng chữ thường không dấu (a-z), số (0-9) và dấu gạch ngang (-)"] }
       - { label: "Mô Tả", name: "description", widget: "text", required: true }
       - label: "Danh Mục"
         name: "category"

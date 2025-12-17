@@ -186,9 +186,9 @@ collections:
     extension: "json"
     format: "json"
     fields:
-      - { label: "ID", name: "id", widget: "string", required: true }
+      - { label: "ID", name: "id", widget: "string", required: true, pattern: ["^[a-z0-9-]+$", "Chỉ dùng chữ thường không dấu (a-z), số (0-9) và dấu gạch ngang (-)"] }
       - { label: "Tên Danh Mục", name: "name", widget: "string", required: true }
-      - { label: "Slug", name: "slug", widget: "string", required: true }
+      - { label: "Slug (không dấu)", name: "slug", widget: "string", required: true, hint: "VD: luat-giao-thong (KHÔNG dùng: luật-giao-thông)", pattern: ["^[a-z0-9-]+$", "Chỉ dùng chữ thường không dấu (a-z), số (0-9) và dấu gạch ngang (-)"] }
       - { label: "Mô Tả", name: "description", widget: "text", required: false }
       - { label: "Icon", name: "icon", widget: "string", required: false }
       - { label: "Màu Sắc", name: "color", widget: "string", required: false }

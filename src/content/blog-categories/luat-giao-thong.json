@@ -1,0 +1,10 @@
+{
+    "id": "luat-giao-thong",
+    "name": "Luật giao thông",
+    "slug": "luat-giao-thong",
+    "description": "Cập nhật các quy định, luật lệ giao thông mới nhất và hướng dẫn thủ tục liên quan đến xe thương mại",
+    "icon": "Scale",
+    "color": "#6366F1",
+    "isHidden": false,
+    "order": 7
+}
