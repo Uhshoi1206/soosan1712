@@ -1,0 +1,10 @@
+{
+    "id": "du-an",
+    "name": "Dự án",
+    "slug": "du-an",
+    "description": "Các dự án mà Soosan Motor đã tham gia cung cấp xe và thiết bị",
+    "icon": "Building",
+    "color": "#10B981",
+    "isHidden": false,
+    "order": 8
+}
