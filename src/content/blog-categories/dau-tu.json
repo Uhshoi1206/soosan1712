@@ -1,0 +1,10 @@
+{
+    "id": "dau-tu",
+    "name": "Đầu tư",
+    "slug": "dau-tu",
+    "description": "Các cơ hội đầu tư và phân tích thị trường xe thương mại",
+    "icon": "TrendingUp",
+    "color": "#F59E0B",
+    "isHidden": false,
+    "order": 9
+}

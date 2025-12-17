@@ -162,7 +162,7 @@ collections:
     label_singular: "Danh Mục"
     folder: "src/content/categories"
     create: true
-    slug: "{{slug}}"
+    slug: "{{id}}"
     extension: "json"
     format: "json"
     fields:
@@ -182,7 +182,7 @@ collections:
     label_singular: "Danh Mục Bài Viết"
     folder: "src/content/blog-categories"
     create: true
-    slug: "{{slug}}"
+    slug: "{{id}}"
     extension: "json"
     format: "json"
     fields:
